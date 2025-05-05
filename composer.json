@@ -1,0 +1,8 @@
+{
+  "name": "progresi/agenda-events",
+  "description": "Plugin de gestión de eventos",
+  "type": "wordpress-plugin",
+  "require": {
+    "htmlburger/carbon-fields": "^3.0"
+  }
+}
