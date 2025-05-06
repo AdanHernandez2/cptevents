@@ -88,9 +88,14 @@ function eventos_agenda_shortcode($atts)
                                         <td><?php echo esc_html($fecha['mes']); ?></td>
                                         <td><?php echo esc_html($fecha['hora']); ?></td>
                                         <td><?php echo esc_html($fecha['ciudad']); ?></td>
+                                        <?php if (!empty($fecha['logo_taquilla'])): ?>
+                                            <td>
+                                                <img src="<?php echo esc_url($fecha['logo_taquilla']); ?>" alt="Logo Taquilla">
+                                            </td>
+                                        <?php endif; ?>
                                         <td>
                                             <?php if ($fecha['enlace_taquilla']) : ?>
-                                                <a href="<?php echo esc_url($fecha['enlace_taquilla']); ?>" target="_blank">Comprar</a>
+                                                <a href="<?php echo esc_url($fecha['enlace_taquilla']); ?>" target="_blank">Comprar Entrada</a>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

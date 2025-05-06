@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Eventos Agenda
  * Description: Plugin para gestionar eventos con información detallada y enlaces de compra
- * Version: 1.0.5
+ * Version: 1.0.8
  * Author: Progresi
  * Text Domain: eventos-agenda
  */
@@ -30,9 +30,27 @@ add_action('after_setup_theme', function () {
 $includes = [
     'includes/cpt-eventos.php',    // CPT y taxonomías
     'includes/carbon-fields.php',  // Campos personalizados
-    'includes/templates.php',      // Manejo de plantillas
     'includes/shortcodes.php',     // Shortcodes
 ];
+
+add_filter('template_include', 'eventos_agenda_forzar_template', 99);
+function eventos_agenda_forzar_template($template)
+{
+    if (is_post_type_archive('eventos')) {
+        $plugin_template = EVENTOS_AGENDA_PATH . 'includes/templates/archive-eventos.php';
+        if (file_exists($plugin_template)) {
+            return $plugin_template;
+        }
+    }
+    return $template;
+}
+
+add_filter('archive_template_hierarchy', function ($template) {
+    if (is_post_type_archive('eventos')) {
+        array_unshift($template, 'archive-eventos.php');
+    }
+    return $template;
+});
 
 foreach ($includes as $file) {
     if (file_exists(EVENTOS_AGENDA_PATH . $file)) {
