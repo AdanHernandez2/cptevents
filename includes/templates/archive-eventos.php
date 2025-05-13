@@ -1,33 +1,108 @@
 <?php
 
 /**
- * Archive Template for Eventos
+ * Archive Template for Eventos - Ordenado por fecha
  */
-
 get_header();
+
+// Obtener todos los eventos
+$args = array(
+    'post_type' => 'eventos',
+    'posts_per_page' => -1,
+    'orderby' => 'meta_value',
+    'order' => 'ASC',
+);
+
+$eventos_query = new WP_Query($args);
+
+// Función para convertir fecha a timestamp
+function convertir_fecha_a_ordenable($mes, $dia = '01', $año = null)
+{
+    if (!$año) $año = date('Y'); // Usar año actual si no se especifica
+
+    $meses = [
+        'Enero' => '01',
+        'Febrero' => '02',
+        'Marzo' => '03',
+        'Abril' => '04',
+        'Mayo' => '05',
+        'Junio' => '06',
+        'Julio' => '07',
+        'Agosto' => '08',
+        'Septiembre' => '09',
+        'Octubre' => '10',
+        'Noviembre' => '11',
+        'Diciembre' => '12'
+    ];
+
+    $mes_numero = $meses[$mes] ?? '01';
+    return strtotime("$año-$mes_numero-$dia");
+}
+
+// Recolectar y ordenar eventos
+$eventos_ordenados = array();
+
+if ($eventos_query->have_posts()) {
+    while ($eventos_query->have_posts()) {
+        $eventos_query->the_post();
+
+        $autor = carbon_get_post_meta(get_the_ID(), 'evento_autor');
+        $temporada_texto = carbon_get_post_meta(get_the_ID(), 'evento_temporada_texto');
+        $fechas = carbon_get_post_meta(get_the_ID(), 'evento_fechas');
+        $categorias = get_the_terms(get_the_ID(), 'categoria_evento');
+        $categoria_nombre = !empty($categorias) ? $categorias[0]->name : '';
+
+        // Determinar fecha para ordenación
+        $fecha_orden = PHP_INT_MAX; // Valor alto por defecto (sin fecha)
+
+        // Prioridad 1: Usar la primera fecha específica si existe
+        if (!empty($fechas) && !empty($fechas[0]['mes'])) {
+            $dia = !empty($fechas[0]['dia']) ? $fechas[0]['dia'] : '01';
+            $fecha_orden = convertir_fecha_a_ordenable($fechas[0]['mes'], $dia);
+        }
+        // Prioridad 2: Intentar extraer fecha del texto de temporada
+        elseif ($temporada_texto) {
+            // Intenta extraer mes y año del texto (ej: "Marzo de 2026")
+            if (preg_match('/(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)[\s\-]*(?:de|del?)?[\s\-]*(\d{4})/i', $temporada_texto, $matches)) {
+                $fecha_orden = convertir_fecha_a_ordenable($matches[1], '01', $matches[2]);
+            }
+        }
+
+        $eventos_ordenados[] = array(
+            'fecha_orden' => $fecha_orden,
+            'post_id' => get_the_ID(),
+            'autor' => $autor,
+            'temporada_texto' => $temporada_texto,
+            'fechas' => $fechas,
+            'categoria_nombre' => $categoria_nombre
+        );
+    }
+    wp_reset_postdata();
+
+    // Ordenar eventos por fecha (más antiguos primero)
+    usort($eventos_ordenados, function ($a, $b) {
+        return $a['fecha_orden'] - $b['fecha_orden'];
+    });
+}
 ?>
 
 <div class="container-eventos-agenda">
-    <?php if (have_posts()) : ?>
+    <?php if (!empty($eventos_ordenados)) : ?>
         <div class="eventos-grid">
-            <?php while (have_posts()) : the_post();
-                $autor = carbon_get_post_meta(get_the_ID(), 'evento_autor');
-                $temporada_texto = carbon_get_post_meta(get_the_ID(), 'evento_temporada_texto');
-                $fechas = carbon_get_post_meta(get_the_ID(), 'evento_fechas');
-                $categorias = get_the_terms(get_the_ID(), 'categoria_evento');
-                $categoria_nombre = !empty($categorias) ? $categorias[0]->name : '';
-            ?>
+            <?php foreach ($eventos_ordenados as $evento) :
+                setup_postdata($GLOBALS['post'] = get_post($evento['post_id'])); ?>
+
                 <div class="evento-card">
                     <div class="evento-header">
-                        <?php if ($categoria_nombre) : ?>
-                            <div class="evento-categoria"><?php echo esc_html($categoria_nombre); ?></div>
+                        <?php if ($evento['categoria_nombre']) : ?>
+                            <div class="evento-categoria"><?php echo esc_html($evento['categoria_nombre']); ?></div>
                         <?php endif; ?>
 
                         <h2 class="evento-titulo"><?php the_title(); ?></h2>
-                        <div class="evento-autor"><?php echo esc_html($autor); ?></div>
+                        <div class="evento-autor"><?php echo esc_html($evento['autor']); ?></div>
 
-                        <?php if ($temporada_texto) : ?>
-                            <div class="evento-temporada"><?php echo esc_html($temporada_texto); ?></div>
+                        <?php if ($evento['temporada_texto']) : ?>
+                            <div class="evento-temporada"><?php echo esc_html($evento['temporada_texto']); ?></div>
                         <?php endif; ?>
 
                         <?php if (has_post_thumbnail()) : ?>
@@ -37,7 +112,7 @@ get_header();
                         <?php endif; ?>
                     </div>
 
-                    <?php if (!empty($fechas)) : ?>
+                    <?php if (!empty($evento['fechas'])) : ?>
                         <div class="evento-fechas">
                             <table>
                                 <thead>
@@ -51,7 +126,7 @@ get_header();
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($fechas as $fecha) : ?>
+                                    <?php foreach ($evento['fechas'] as $fecha) : ?>
                                         <tr>
                                             <td><?php echo esc_html($fecha['dia']); ?></td>
                                             <td><?php echo esc_html($fecha['mes']); ?></td>
@@ -75,7 +150,10 @@ get_header();
                         </div>
                     <?php endif; ?>
                 </div>
-            <?php endwhile; ?>
+
+            <?php
+                wp_reset_postdata();
+            endforeach; ?>
         </div>
 
         <?php the_posts_pagination(); ?>

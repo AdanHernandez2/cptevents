@@ -1,4 +1,8 @@
 /* Estilos generales */
+.post-type-archive-eventos .site-content {
+  background-color: #fff;
+}
+
 .container-eventos-agenda {
   width: 100%;
 }
@@ -36,15 +40,18 @@
 
 .evento-categoria {
   font-size: 16px;
-  color: #555;
+  color: #999999;
   margin-bottom: 8px;
   text-transform: uppercase;
+  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
 }
 
 .evento-titulo {
   font-size: 22px;
   margin: 0 0 10px;
+  font-weight: 500;
   color: #7e0910;
+  font-family: Georgia, Times, "Times New Roman", serif;
 }
 
 .evento-autor {
@@ -70,27 +77,42 @@
 }
 
 .evento-fechas {
-  padding: 0 20px 20px;
+  padding: 10px 10px;
   overflow-x: auto;
   width: 100%;
+  background-color: #fff;
+  border-radius: 5px;
 }
 
 .evento-fechas table {
   width: 100%;
-  border-collapse: collapse;
+  border: none;
   font-size: 14px;
 }
 
 .evento-fechas th {
-  background-color: #444;
-  color: white;
-  padding: 10px;
+  background-color: #fff;
+  color: #000000;
+  padding: 5px;
   text-align: left;
+  border: none;
+  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
 }
 
+tbody tr:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+tbody tr:hover {
+  background-color: #7e091017;
+}
 .evento-fechas td {
-  padding: 10px;
-  border: 1px solid #eee;
+  color: #000000;
+  padding: 8px;
+  border: none;
+}
+
+.evento-fechas td img {
+  width: 80px;
 }
 
 .evento-fechas a {

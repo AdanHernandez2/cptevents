@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Eventos Agenda
  * Description: Plugin para gestionar eventos con información detallada y enlaces de compra
- * Version: 1.0.8
+ * Version: 2.0.0
  * Author: Progresi
  * Text Domain: eventos-agenda
  */
