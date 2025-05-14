@@ -58,26 +58,37 @@ foreach ($includes as $file) {
     }
 }
 
-// Registrar estilos y scripts
 add_action('wp_enqueue_scripts', 'eventos_agenda_assets');
 function eventos_agenda_assets()
 {
-    // CSS
+    // CSS - Cargar en todo el sitio (si es necesario para todos los eventos)
     wp_enqueue_style(
         'eventos-agenda-css',
         EVENTOS_AGENDA_URL . 'assets/css/estilo.css',
         [],
-        EVENTOS_AGENDA_VERSION
+        EVENTOS_AGENDA_VERSION,
+        'all' // Media query (opcional)
     );
 
-    // JS
-    wp_enqueue_script(
-        'eventos-agenda-js',
-        EVENTOS_AGENDA_URL . 'assets/js/script.js',
-        ['jquery'],
-        EVENTOS_AGENDA_VERSION,
-        true
-    );
+    // JS - Solo en archive de eventos
+    if (is_post_type_archive('eventos') || is_tax('categoria_evento')) {
+        wp_enqueue_script(
+            'eventos-agenda-js',
+            EVENTOS_AGENDA_URL . 'assets/js/script.js',
+            ['jquery'], // Dependencia
+            EVENTOS_AGENDA_VERSION,
+            [
+                'in_footer' => true, // Mejor práctica que el booleano simple
+                'strategy'  => 'defer' // Mejor performance (WP 6.3+)
+            ]
+        );
+
+        // Opcional: Pasar variables PHP a JS
+        wp_localize_script('eventos-agenda-js', 'eventosAgendaVars', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'security' => wp_create_nonce('eventos_agenda_nonce')
+        ]);
+    }
 }
 
 // Manejo del editor para el CPT eventos

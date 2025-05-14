@@ -62,8 +62,20 @@ if ($eventos_query->have_posts()) {
         }
         // Prioridad 2: Intentar extraer fecha del texto de temporada
         elseif ($temporada_texto) {
-            // Intenta extraer mes y año del texto (ej: "Marzo de 2026")
-            if (preg_match('/(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)[\s\-]*(?:de|del?)?[\s\-]*(\d{4})/i', $temporada_texto, $matches)) {
+            // Intenta extraer mes(es) y año del texto (ej: "Octubre, Noviembre, 2025")
+            if (
+                preg_match_all('/(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)/i', $temporada_texto, $mes_matches) &&
+                preg_match('/(\d{4})/', $temporada_texto, $ano_match)
+            ) {
+
+                // Tomamos el último mes mencionado (para casos como "Octubre, Noviembre")
+                $ultimo_mes = end($mes_matches[1]);
+                $ano = $ano_match[1];
+
+                $fecha_orden = convertir_fecha_a_ordenable($ultimo_mes, '01', $ano);
+            }
+            // Formato alternativo (ej: "Marzo de 2026")
+            elseif (preg_match('/(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)[\s\-]*(?:de|del?)?[\s\-]*(\d{4})/i', $temporada_texto, $matches)) {
                 $fecha_orden = convertir_fecha_a_ordenable($matches[1], '01', $matches[2]);
             }
         }
@@ -79,13 +91,14 @@ if ($eventos_query->have_posts()) {
     }
     wp_reset_postdata();
 
-    // Ordenar eventos por fecha (más antiguos primero)
+    // Ordenar eventos por fecha (más cercanos primero)
     usort($eventos_ordenados, function ($a, $b) {
         return $a['fecha_orden'] - $b['fecha_orden'];
     });
 }
 ?>
 
+<!-- El resto del HTML permanece exactamente igual -->
 <div class="container-eventos-agenda">
     <?php if (!empty($eventos_ordenados)) : ?>
         <div class="eventos-grid">
