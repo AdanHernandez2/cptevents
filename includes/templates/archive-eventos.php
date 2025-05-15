@@ -130,6 +130,7 @@ if ($eventos_query->have_posts()) {
                                         <tr>
                                             <td><?php echo esc_html($fecha['dia']); ?></td>
                                             <td><?php echo esc_html($fecha['mes']); ?></td>
+                                            <td><?php echo esc_html($fecha['dia_semana']); ?></td>
                                             <td><?php echo esc_html($fecha['hora']); ?></td>
                                             <td><?php echo esc_html($fecha['ciudad']); ?></td>
                                             <td><?php echo esc_html($fecha['teatro']); ?></td>
