@@ -132,6 +132,7 @@ if ($eventos_query->have_posts()) {
                                     <tr>
                                         <th>Día</th>
                                         <th>Mes</th>
+                                        <th></th>
                                         <th>Hora</th>
                                         <th>Ciudad</th>
                                         <th>Teatro</th>
